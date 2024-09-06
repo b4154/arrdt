@@ -16,7 +16,7 @@ This was primarily made for my specific use case so there are a couple things to
 ```
 git clone https://github.com/b4154/arrdt
 cd arrdt
-npm install
+pnpm install or npm install
 mv config.example.yaml config.yaml
 ```
 
