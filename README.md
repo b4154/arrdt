@@ -6,5 +6,23 @@ This was primarily made for my specific use case so there are a couple things to
 2. It will not add content unless the entire series is available on RD (no missing episodes).
 3. Some series may not be able to be fetched as they may be missing on the Cinemeta API, which this tool uses to map IMDB IDs to TVDB IDs.
 
-TODO:
+## TODO
 * Move to torrents to blackhole import
+* Turn into a proper CLI
+* Series folder mapping in the case the sonarr series path isn't the same where the script is running.
+* Create a Docker image
+
+## Getting Started
+```
+git clone https://github.com/b4154/arrdt
+cd arrdt
+npm install
+mv config.example.yaml config.yaml
+```
+
+Once you add the relevant info to the config, you can then run these commands.
+
+```
+npx tsx series.ts <tvdb_id> [--no-cache]
+npx tsx mass_series_search.ts [--no-cache]
+```

@@ -12,7 +12,6 @@ import config from "../utils/config";
 const mount_path = config.remote_mount_path;
 
 export default async function series (id, no_cache = false) {
-	
 	let tvdb_id = parseInt(id);
 	//Get series from sonarr
 	let series = (await getSeries(tvdb_id))[0];
@@ -20,7 +19,6 @@ export default async function series (id, no_cache = false) {
 	console.log(`Found series "${series.title}"`)
 	//Get episode list from sonarr
 	let episodes = await getEpisodes(series.id)
-	// console.log('episodes', episodes)
 
 	//Fetch series meta from stremio cinemeta.
 	let seriesMeta = await getSeriesMeta(series.imdbId).catch(() => {});
@@ -65,8 +63,6 @@ export default async function series (id, no_cache = false) {
 
 		torrent = await RD.getTorrent(torrent.id)
 
-		// console.log(torrent, selectedFiles)
-
 		for (let file of files) {
 			let fileId = (file.idx + 1).toString();
 
@@ -78,7 +74,6 @@ export default async function series (id, no_cache = false) {
 		}
 	}
 
-	console.log(symlinks)
 	if (Object.entries(symlinks).length <= 0) throw new Error('No content found')
 
 	if (existsSync(series.path)) await fsPromise.rm(series.path, { recursive: true });
