@@ -8,7 +8,7 @@ This was primarily made for my specific use case so there are a couple things to
 4. mass_series_search will only search from shows that have ended.
 
 ## TODO
-* Move to torrents to blackhole import
+* Move to blackhole import
 * Wait for symlinks to be available in mount before creating them.
 * Turn into a proper CLI
 * Series folder mapping in the case the sonarr series path isn't the same where the script is running.
