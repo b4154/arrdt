@@ -1,0 +1,7 @@
+cache_dir: ~/.arrdt
+remote_mount_path: /mnt/remote/realdebrid/torrents
+realdebrid:
+  api_key: API_KEY
+sonarr:
+  endpoint: SONARR_ENDPOINT
+  api_key: API_KEY
