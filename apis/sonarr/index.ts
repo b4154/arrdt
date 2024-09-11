@@ -11,11 +11,13 @@ const client = axios.create({
 export type Series = {
 	id: number;
 	title: string;
+	sortTitle: string;
 	cleanTitle: string;
 	imdbId: string;
 	tvdbId: string;
 	path: string;
 	ended: boolean;
+	year: number;
 	statistics: {
 		percentOfEpisodes: number;
 		totalEpisodeCount: number;

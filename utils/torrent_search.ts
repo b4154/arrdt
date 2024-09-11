@@ -30,6 +30,9 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 			let hash = url[5];
 			let id = parseInt(url[7]);
 
+			//Anime OVA's will never not be considered Specials in sonarr. This should prevent false matches.
+			if (stream.title.toLowerCase().includes('OVA') && episode.seasonNumber !== 0) continue;
+
 			if (!torrents[hash]) torrents[hash] = {
 				title: stream.title.split('\n')[0],
 				name: stream.name,
@@ -41,6 +44,7 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 
 			torrents[hash].files.push({
 				idx: id,
+				filename: stream.title.split('\n')[1],
 				episode: episode.episodeNumber,
 				season: episode.seasonNumber
 			})

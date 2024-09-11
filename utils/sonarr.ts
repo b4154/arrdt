@@ -1,18 +1,31 @@
+import type { Series } from '../apis/sonarr/index';
 //Injects "S01" into string where show name is to make it a valid sonarr torrent title
-export function validTorrentName (showName: string, aliases: string[], title: string) {
-	showName = showName.toLowerCase()
-	let name = title.toLowerCase().replaceAll('.', ' ');
+export function validTorrentName (series: Series, torrentTitle: string) {
+	torrentTitle = torrentTitle.toLowerCase().replaceAll('.', ' ')
+	
+	let showNames = [series.title.toLowerCase(), series.cleanTitle.toLowerCase(), series.sortTitle.toLowerCase(), ...series.alternateTitles.map((alias) => alias.title.toLowerCase())]
 
-	if (name.match(/(- (?<absolute>\d{1,4}))/)) {
-		return "[RD] " + name
-	} else {
-		name = name.replaceAll(/(s(?<season>\d{1,4}))?(e(?<episode>\d{1,4}))?/g, '').replace(showName, showName + " S01")
+	if (series.title.includes(':')) showNames.push(series.title.toLowerCase().split(':')[0].trim())
+
+	if (showNames.some((name) => torrentTitle.includes(name))) {	
+		let parsedTitle = torrentTitle.matchAll(/(?:\[.*?\]|\(.*?\))|([^\[\]\(\)]+)/gm);
+		let titleSegments = [...parsedTitle].map((segment) => segment[0])
+		let newTitle = [];
+		if (titleSegments[0].startsWith('[')) newTitle.push(titleSegments.shift());
+
+		let episodes = torrentTitle.match(/s(\d+)e(\d+)/);
+		let episodesAbsolute = torrentTitle.match(/((?<start>\d{1,4})\s?-\s?(?<end>\d{1,4}))/)
+
+		newTitle.push(
+			series.sortTitle, 
+			episodes ? episodes[0] : episodesAbsolute ? episodesAbsolute[0] : `S01`, 
+			`(${series.year})`, 
+			...titleSegments.filter((segment) => segment.startsWith('(') || segment.startsWith('[')), 
+			'[RD+]'
+		);
+
+		return newTitle.join(' ');
 	}
 
-	for (let alias of aliases) {
-		alias = alias.toLowerCase()
-		name = name.replace(alias, alias + " S01")
-	}
-
-	return "[RD] " + name
+	return `${torrentTitle} [RD+]`;
 }

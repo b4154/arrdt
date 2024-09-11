@@ -6,7 +6,7 @@ import { getTorrent } from "../apis/torrentio";
 import { toMagnetURI, toTorrentFile } from 'parse-torrent'
 import { promises as fsPromise, existsSync } from 'fs';
 import { validTorrentName } from "../utils/sonarr";
-import { getSeriesTorrents } from "../utils/torrentio";
+import { getSeriesTorrents } from "../utils/torrent_search";
 import config from "../utils/config";
 
 const mount_path = config.remote_mount_path;
@@ -28,8 +28,8 @@ export default async function series (id, no_cache = false) {
 	let torrents = await getSeriesTorrents(series, seriesMeta, episodes, no_cache);
 
 	torrents = (await Promise.all(torrents.map(async (torrent) => {
-		(torrent as any).queriedTitle = validTorrentName(series.title, series.alternateTitles.map((alias) => alias.title), torrent.title);
-		let parsed = await parseTitle(validTorrentName(series.title, series.alternateTitles.map((alias) => alias.title), torrent.title));
+		let queriedTitle = validTorrentName(series, torrent.title);
+		let parsed = await parseTitle(queriedTitle);
 		if (parsed.series == undefined) return null;
 		return {...torrent, score: parsed.customFormatScore * torrent.files.length}
 	}))).filter((torrent) => torrent !== null)
@@ -70,7 +70,7 @@ export default async function series (id, no_cache = false) {
 
 			let fileInfo = torrent.files.find((f) => f.id.toString() === fileId);
 			
-			symlinks[path.join(series.path, `${series.cleanTitle} - S${file.season}E${file.episode}${path.extname(fileInfo.path)}`)] = path.join(mount_path, torrent.filename, path.basename(fileInfo.path));
+			symlinks[path.join(series.path, `${series.cleanTitle} - S${file.season}E${file.episode} [${infoHash}]${path.extname(fileInfo.path)}`)] = path.join(mount_path, torrent.filename, path.basename(fileInfo.path));
 		}
 	}
 
