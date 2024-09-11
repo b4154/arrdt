@@ -8,6 +8,7 @@ import { promises as fsPromise, existsSync } from 'fs';
 import { validTorrentName } from "../utils/sonarr";
 import { getSeriesTorrents } from "../utils/torrent_search";
 import config from "../utils/config";
+import { waitForFile } from "../utils/fs";
 
 const mount_path = config.remote_mount_path;
 
@@ -79,13 +80,15 @@ export default async function series (id, no_cache = false) {
 	if (existsSync(series.path)) await fsPromise.rm(series.path, { recursive: true });
 	await fsPromise.mkdir(series.path);
 
-	for (let [destination, source] of Object.entries(symlinks)) {
-		console.log(`Creating symlink ${destination} -> ${source}`)
-		await fsPromise.symlink(source, destination, 'file');
-	}
-
-	await command({ name:"RefreshSeries", seriesId: series.id })
-
-	console.log('Finished!')
-
+	Promise.all(
+		Object.entries(symlinks).map(([destination, source]) => {
+			return waitForFile(source, 60000).then(async () => {
+				console.log(`Creating symlink ${destination} -> ${source}`)
+				await fsPromise.symlink(source, destination, 'file');
+			})
+		})
+	).then(async () => {
+		await command({ name:"RefreshSeries", seriesId: series.id })
+		console.log(`Finished series: ${series.title}`)
+	})
 }
