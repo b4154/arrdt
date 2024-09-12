@@ -80,15 +80,17 @@ export default async function series (id, no_cache = false) {
 	if (existsSync(series.path)) await fsPromise.rm(series.path, { recursive: true });
 	await fsPromise.mkdir(series.path);
 
-	Promise.all(
+	return await Promise.all(
 		Object.entries(symlinks).map(([destination, source]) => {
-			return waitForFile(source, 60000).then(async () => {
+			return waitForFile(source, 1000 * 60 * 4).then(async () => {
 				console.log(`Creating symlink ${destination} -> ${source}`)
 				await fsPromise.symlink(source, destination, 'file');
 			})
 		})
 	).then(async () => {
-		await command({ name:"RefreshSeries", seriesId: series.id })
+		await command({ name: "RefreshSeries", seriesId: series.id })
 		console.log(`Finished series: ${series.title}`)
+
+		return series.id;
 	})
 }
