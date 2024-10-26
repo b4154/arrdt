@@ -6,12 +6,13 @@ const metaClient = axios.create({
 
 export type SeriesMeta = {
 	meta: {
+		imdb_id: string;
 		releaseInfo: string;
 		videos : {
 			id: string;
-			season: number;
-			episode: number;
-			tvdb_id: number;
+			season?: number;
+			episode?: number;
+			tvdb_id?: number;
 		}[]
 	}
 }

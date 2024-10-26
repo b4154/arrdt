@@ -28,7 +28,11 @@ export type Series = {
 		sceneSeasonNumber: number
 		sceneOrigin: string
 		comment: string	
-	}[]
+	}[],
+	ratings: {
+		value: number
+		votes: number
+	}
 };
 
 export async function getSeries (tvdbId?: number): Promise<Series[]> {
@@ -38,6 +42,7 @@ export async function getSeries (tvdbId?: number): Promise<Series[]> {
 export type Episodes = {
 	id: number;
 	tvdbId: number;
+	title: string;
 	monitored: boolean;
 	seasonNumber: number;
 	episodeNumber: number;
@@ -91,6 +96,6 @@ export async function command (command) {
 	(await client.post('/api/v3/command', command));
 }
 
-export async function parseTitle (title): Promise<{ customFormatScore: number, series: any }> {
+export async function parseTitle (title): Promise<{ customFormatScore: number, series: Series }> {
 	return (await client.get('/api/v3/parse', { params: { title }})).data
 }

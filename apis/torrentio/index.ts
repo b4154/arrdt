@@ -5,7 +5,9 @@ import * as fs from 'node:fs';
 import config from '../../utils/config';
 import path from 'node:path';
 
-fs.mkdirSync(path.join(config.cache_dir, 'torrentio'), { recursive: true });
+fs.mkdir(path.join(config.cache_dir, 'torrentio'), { recursive: true }, (err) => {
+	if (err) throw err;
+});
 
 const client = rateLimit(axios.create({
 	baseURL: 'https://torrentio.strem.fun',
@@ -27,17 +29,20 @@ axiosRetry(client, {
 })
 
 export async function getTorrent (imdb_id: string, no_cache: boolean): Promise<{ streams: {
-	url: string;
-	title: string;
 	name: string;
+	title: string;
+	infoHash: string;
+	fileIdx: number;
 	behaviorHints: {
 		bingeGroup: string;
 	}
 }[] }> {
+
 	const cachePath = path.join(config.cache_dir, `torrentio/${imdb_id}.json`);
+
 	if (fs.existsSync(cachePath) && !no_cache) return JSON.parse(fs.readFileSync(cachePath, { encoding: 'utf8', flag: 'r' }))
-		
-	let req = await client.get(`/realdebrid=${config.realdebrid.api_key}%7Cdebridoptions=nodownloadlinks/stream/series/${imdb_id}.json`);
+	
+	let req = await client.get(`/stream/series/${imdb_id}.json`);
 
 	fs.writeFileSync(cachePath, JSON.stringify(req.data), { encoding: 'utf8' });
 

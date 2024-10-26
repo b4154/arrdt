@@ -9,11 +9,17 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 	} = {};
 
 	for (let episode of episodes) {
-		if (episode.monitored === false) continue;
+		if (episode.monitored === false  || episode.title === "TBA") continue;
 
 		console.log(`Finding torrents for S${episode.seasonNumber}E${episode.episodeNumber}`)
 
 		let episodeMeta = seriesMeta.meta.videos.find((v) => v.tvdb_id == episode.tvdbId) || seriesMeta.meta.videos.find((v) => v.season == episode.seasonNumber && v.episode == episode.episodeNumber);
+
+		if (!episodeMeta) {
+			episodeMeta = {
+				id: `${seriesMeta.meta.imdb_id}:${episode.seasonNumber}:${episode.episodeNumber}`
+			}
+		}
 
 		if (!episodeMeta) {
 			console.log(`WARNING: Episode meta missing... skipping episode`)
@@ -25,10 +31,11 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 		if (series.ended && streams.length <= 0) throw new Error(`Stream for S${episode.seasonNumber} E${episode.episodeNumber} not found.`)
 
 		for (let stream of streams) {
-			if (!stream?.url) continue;
-			let url = stream.url.split('/');
-			let hash = url[5];
-			let id = parseInt(url[7]);
+			// if (!stream?.url) continue;
+			// console.log(stream)
+
+			let hash = stream.infoHash;
+			let id = stream.fileIdx;
 
 			//Anime OVA's will never not be considered Specials in sonarr. This should prevent false matches.
 			if (stream.title.toLowerCase().includes('OVA') && episode.seasonNumber !== 0) continue;
@@ -57,12 +64,13 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 
 	for (let [infoHash, torrent] of Object.entries(torrents)) {
 		//Show fileLists with ONLY video files
-		let fileLists = availability[infoHash].rd
+		let fileLists = availability[infoHash]?.rd ? availability[infoHash].rd
 			.filter(
 				(fileList) => Object.values(fileList).every((file) => 
 					file.filename?.includes('.avi') || file.filename?.includes('.mkv') || file.filename?.includes('.mp4') || file.filename?.includes('.wmv')
 				) 
-			)
+			) 
+		: []
 		//Get all file ids needed for torrent
 		let fileIds = torrent.files.map((file) => (file.idx + 1).toString())
 		//Fetch fileList with every file ID within it.
