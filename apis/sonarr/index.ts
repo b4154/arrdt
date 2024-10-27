@@ -1,5 +1,5 @@
 import axios from "axios";
-import config from '../../utils/config';
+import config from '../../utils/config.ts';
 
 const client = axios.create({
 	baseURL: config.sonarr.endpoint,

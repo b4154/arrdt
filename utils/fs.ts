@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 export function waitForFile(filePath, timeout = 5000) {
 	return new Promise<void>((resolve, reject) => {

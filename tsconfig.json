@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"target": "esnext",
 		"module": "esnext",
-		"moduleResolution": "Node",
-		"allowSyntheticDefaultImports": true,
-		"resolveJsonModule": true
+		"allowImportingTsExtensions": true,
+		"moduleResolution": "node",
+		"allowSyntheticDefaultImports": true
 	}
 }

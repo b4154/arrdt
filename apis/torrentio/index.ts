@@ -2,7 +2,7 @@ import rateLimit from 'axios-rate-limit';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import * as fs from 'node:fs';
-import config from '../../utils/config';
+import config from '../../utils/config.ts';
 import path from 'node:path';
 
 fs.mkdir(path.join(config.cache_dir, 'torrentio'), { recursive: true }, (err) => {

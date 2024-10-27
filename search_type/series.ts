@@ -1,14 +1,13 @@
 import * as path from "path";
-import { getSeriesMeta } from "../apis/cinemeta";
-import * as RD from "../apis/realdebrid";
-import { command, getEpisodes, getSeries, parseTitle } from "../apis/sonarr";
-import { getTorrent } from "../apis/torrentio";
+import { getSeriesMeta } from "../apis/cinemeta/index.ts";
+import * as RD from "../apis/realdebrid/index.ts";
+import { command, getEpisodes, getSeries, parseTitle } from "../apis/sonarr/index.ts";
 import { toMagnetURI, toTorrentFile } from "parse-torrent";
 import { promises as fsPromise, existsSync } from "fs";
-import { validTorrentName } from "../utils/sonarr";
-import { getSeriesTorrents } from "../utils/torrent_search";
-import config from "../utils/config";
-import { waitForFile } from "../utils/fs";
+import { validTorrentName } from "../utils/sonarr.ts";
+import { getSeriesTorrents } from "../utils/torrent_search.ts";
+import config from "../utils/config.ts";
+import { waitForFile } from "../utils/fs.ts";
 
 const mount_path = config.remote_mount_path;
 

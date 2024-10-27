@@ -1,10 +1,10 @@
-import { getSeries } from "./apis/sonarr";
+import { getSeries } from "./apis/sonarr/index.ts";
 
-import series from "./search_type/series"
+import series from "./search_type/series.ts"
 import * as fs from 'fs';
-import config from "./utils/config";
-import path from "path";
-import { chunks } from "./utils/generic";
+import config from "./utils/config.ts";
+import path from "node:path";
+import { chunks } from "./utils/generic.ts";
 
 // let seriesFinished: { [id: string]: number } = {}
 

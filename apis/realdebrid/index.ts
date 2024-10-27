@@ -1,7 +1,7 @@
 import axios from "axios";
 import rateLimit from 'axios-rate-limit';
 import _ from 'lodash';
-import config from '../../utils/config';
+import config from '../../utils/config.ts';
 
 const client = axios.create({
 	baseURL: 'https://api.real-debrid.com/rest/1.0/',

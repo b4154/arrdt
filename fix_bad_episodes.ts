@@ -1,4 +1,4 @@
-import { command, deleteEpisodeFile, deleteEpisodesFilesForShow, getEpisodeFile, getEpisodeFiles, getEpisodes, getSeries } from "./apis/sonarr";
+import { command, deleteEpisodeFile, deleteEpisodesFilesForShow, getEpisodeFile, getEpisodeFiles, getEpisodes, getSeries } from "./apis/sonarr/index.ts";
 
 
 let series = await getSeries();

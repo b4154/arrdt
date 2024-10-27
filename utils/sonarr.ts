@@ -1,4 +1,4 @@
-import type { Series } from '../apis/sonarr/index';
+import type { Series } from '../apis/sonarr/index.ts';
 //Injects "S01" into string where show name is to make it a valid sonarr torrent title
 export function validTorrentName (series: Series, torrentTitle: string) {
 	torrentTitle = torrentTitle.toLowerCase().replaceAll('.', ' ')

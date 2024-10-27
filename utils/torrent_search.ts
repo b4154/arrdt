@@ -1,7 +1,7 @@
-import { SeriesMeta } from "../apis/cinemeta";
-import { Episodes, Series } from "../apis/sonarr";
-import { getTorrent } from "../apis/torrentio";
-import * as RD from "../apis/realdebrid";
+import { SeriesMeta } from "../apis/cinemeta/index.ts";
+import { Episodes, Series } from "../apis/sonarr/index.ts";
+import { getTorrent } from "../apis/torrentio/index.ts";
+import * as RD from "../apis/realdebrid/index.ts";
 
 export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta, episodes: Episodes, no_cache: boolean): Promise<Torrent[]> {
 	let torrents: {
