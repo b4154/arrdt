@@ -21,7 +21,8 @@ export function validTorrentName (series: Series, torrentTitle: string) {
 			episodes ? episodes[0] : episodesAbsolute ? episodesAbsolute[0] : `S01`, 
 			`(${series.year})`, 
 			...titleSegments.filter((segment) => segment.startsWith('(') || segment.startsWith('[')), 
-			'[RD+]'
+			'[RD+]',
+			...titleSegments.filter((segment) => !(segment.startsWith('(') || segment.startsWith('[')))
 		);
 
 		return newTitle.join(' ');
