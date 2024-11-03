@@ -68,7 +68,7 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 		let fileLists = availability[infoHash]?.rd ? availability[infoHash].rd
 			.filter(
 				(fileList) => Object.values(fileList).every((file) => 
-					file.filename?.includes('.avi') || file.filename?.includes('.mkv') || file.filename?.includes('.mp4') || file.filename?.includes('.wmv')
+					file.filename?.endsWith('.avi') || file.filename?.endsWith('.mkv') || file.filename?.endsWith('.mp4') || file.filename?.endsWith('.wmv')
 				) 
 			) 
 		: []
