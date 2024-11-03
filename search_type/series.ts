@@ -90,9 +90,11 @@ export default async function series(id, no_cache = false) {
 		let magnetInsert = await RD.addMagnet(magnet);
 		let torrent = await RD.getTorrent(magnetInsert.id);
 
-		let selectedFiles = torrents
+		let selectedTorrent = torrents
 			.find((torrent) => torrent.infoHash === infoHash)
-			.files.map((file) => (file.idx + 1).toString());
+
+		let selectedFiles = selectedTorrent.fileSelection;
+
 		await RD.selectFiles(torrent.id, selectedFiles);
 
 		torrent = await RD.getTorrent(torrent.id);
@@ -100,7 +102,7 @@ export default async function series(id, no_cache = false) {
 		for (let file of files) {
 			let fileId = (file.idx + 1).toString();
 
-			if (!selectedFiles.includes(fileId)) continue;
+			if (!selectedFiles.includes(fileId)) throw new Error('File ID missing from selected files...');
 
 			let fileInfo = torrent.files.find(
 				(f) => f.id.toString() === fileId

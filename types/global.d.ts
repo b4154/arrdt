@@ -11,7 +11,8 @@ type Torrent = {
 	score: number
 	infoHash: string
 	bingeGroup: string
-	files: TorrentFile[]
+	files: TorrentFile[],
+	fileSelection?: string[];
 }
 
 type Stream = {

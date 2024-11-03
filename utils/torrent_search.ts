@@ -46,7 +46,8 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 				score: -1,
 				infoHash: hash,
 				bingeGroup: `${stream?.behaviorHints?.bingeGroup}|${hash}`,
-				files: []
+				files: [],
+				fileSelection: []
 			}
 
 			torrents[hash].files.push({
@@ -77,6 +78,9 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 		let filesListIndex = fileLists.map((f) => Object.keys(f)).findIndex((fileList) => fileIds.every((id) => fileList.includes(id)))
 		//Delete from torrents object if it doesn't meet this criteria
 		if (filesListIndex == -1) delete torrents[infoHash];
+		else {
+			torrents[infoHash].fileSelection = Object.keys(fileLists[filesListIndex]);
+		}
 	}
 
 	return Object.values(torrents);
