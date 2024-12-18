@@ -17,7 +17,7 @@ export function validTorrentName (series: Series, torrentTitle: string) {
 		let episodesAbsolute = torrentTitle.match(/((?<start>\d{1,4})\s?-\s?(?<end>\d{1,4}))/)
 
 		newTitle.push(
-			series.sortTitle, 
+			series.title.toLowerCase(), 
 			episodes ? episodes[0] : episodesAbsolute ? episodesAbsolute[0] : `S01`, 
 			`(${series.year})`, 
 			...titleSegments.filter((segment) => segment.startsWith('(') || segment.startsWith('[')), 

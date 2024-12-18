@@ -37,11 +37,14 @@ export default async function series(id, no_cache = false) {
 			torrents.map(async (torrent) => {
 				let queriedTitle = validTorrentName(series, torrent.title);
 				let parsed = await parseTitle(queriedTitle);
-				console.log(queriedTitle, parsed);
+				console.log(queriedTitle, parsed.customFormatScore);
 				if (parsed.series == undefined || parsed.series.id !== series.id) return null;
+				let isEnglish = parsed.parsedEpisodeInfo.languages.find((lang) => lang.name === "English") !== undefined;
+				let resolution = parsed.parsedEpisodeInfo.quality.quality.resolution;
+
 				return {
 					...torrent,
-					score: parsed.customFormatScore * torrent.files.length,
+					score: (parsed.customFormatScore <= 0 ? parsed.customFormatScore : (parsed.customFormatScore + resolution * (isEnglish ? 2 : 1))) * torrent.files.length,
 				};
 			})
 		)
@@ -93,7 +96,11 @@ export default async function series(id, no_cache = false) {
 		let selectedTorrent = torrents
 			.find((torrent) => torrent.infoHash === infoHash)
 
-		let selectedFiles = selectedTorrent.fileSelection;
+		// let selectedFiles = selectedTorrent.fileSelection;
+
+		torrent = await RD.getTorrent(torrent.id);
+
+		let selectedFiles = torrent.files.filter((file) => file.path.endsWith('.avi') || file.path.endsWith('.mkv') || file.path.endsWith('.mp4') || file.path.endsWith('.wmv')).map((file) => file.id.toString())
 
 		await RD.selectFiles(torrent.id, selectedFiles);
 

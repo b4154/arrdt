@@ -96,6 +96,17 @@ export async function command (command) {
 	(await client.post('/api/v3/command', command));
 }
 
-export async function parseTitle (title): Promise<{ customFormatScore: number, series: Series }> {
+export async function parseTitle (title): Promise<{ 
+	customFormatScore: number, 
+	series: Series, 
+	parsedEpisodeInfo: { 
+		languages: { id: number, name: string }[], 
+		quality: { 
+			quality: {
+				resolution: number
+			} 
+		} 
+	} 
+}> {
 	return (await client.get('/api/v3/parse', { params: { title }})).data
 }
