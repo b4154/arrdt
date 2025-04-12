@@ -3,3 +3,15 @@ export function* chunks<T>(arr: T[], n: number): Generator<T[], void> {
 	  yield arr.slice(i, i + n);
 	}
 }
+
+export async function findAsync<T>(
+	array: T[],
+	predicate: (t: T) => Promise<boolean>,
+  ): Promise<T | undefined> {
+	for (const t of array) {
+	  if (await predicate(t)) {
+		return t;
+	  }
+	}
+	return undefined;
+}

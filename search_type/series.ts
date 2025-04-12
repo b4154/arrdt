@@ -1,6 +1,6 @@
 import * as path from "path";
 import { getSeriesMeta } from "../apis/cinemeta/index.ts";
-import * as RD from "../apis/realdebrid/index.ts";
+import * as RD from "../apis/debrid/realdebrid/index.ts";
 import { command, getEpisodes, getSeries, parseTitle } from "../apis/sonarr/index.ts";
 import { toMagnetURI, toTorrentFile } from "parse-torrent";
 import { promises as fsPromise, existsSync } from "fs";
@@ -8,6 +8,7 @@ import { validTorrentName } from "../utils/sonarr.ts";
 import { getSeriesTorrents } from "../utils/torrent_search.ts";
 import config from "../utils/config.ts";
 import { waitForFile } from "../utils/fs.ts";
+import { findAsync } from "../utils/generic.ts";
 
 const mount_path = config.remote_mount_path;
 
@@ -24,7 +25,7 @@ export default async function series(id, no_cache = false) {
 	let seriesMeta = await getSeriesMeta(series.imdbId).catch(() => {});
 	if (!seriesMeta) return;
 
-	//Array of torrents (already checked for availability)
+	//Array of torrents
 	let torrents = await getSeriesTorrents(
 		series,
 		seriesMeta,
@@ -32,6 +33,7 @@ export default async function series(id, no_cache = false) {
 		no_cache
 	);
 
+	//Rank torrents
 	torrents = (
 		await Promise.all(
 			torrents.map(async (torrent) => {
@@ -57,28 +59,33 @@ export default async function series(id, no_cache = false) {
 
 	console.log(torrents);
 
-	let episodeTorrents = episodes
-		.map((episode) => {
-			if (episode.title === "TBA") return;
-			let file = torrents
-				.flatMap(
-					(torrent) =>
-						torrent.files?.map((file) => ({
-							infoHash: torrent.infoHash,
-							score: torrent.score,
-							...file,
-						})) || []
-				)
-				.sort((a, b) => b.score - a.score)
-				.find(
-					(file) =>
-						file.episode === episode.episodeNumber &&
-						file.season === episode.seasonNumber
-				);
 
-			return file;
-		})
-		.filter((file) => file !== undefined);
+	//Map each episode to a torrent
+	let episodeTorrents = (
+		await Promise.all(
+			episodes.map(async (episode) => {
+				if (episode.title === "TBA") return;
+				let files = torrents
+					.flatMap(
+						(torrent) =>
+							torrent.files?.map((file) => ({
+								infoHash: torrent.infoHash,
+								score: torrent.score,
+								...file,
+							})) || []
+					)
+					.sort((a, b) => b.score - a.score)
+
+
+				let selectedFile = await findAsync(files, async (file) => {
+					return file.episode === episode.episodeNumber && file.season === episode.seasonNumber && await RD.instantAvailability(file.infoHash)
+				});
+				
+				return selectedFile;
+			})
+		)
+	)
+	.filter((file) => file !== undefined);
 
 	const insertBatches = Object.groupBy(
 		episodeTorrents,
@@ -93,26 +100,16 @@ export default async function series(id, no_cache = false) {
 		let magnetInsert = await RD.addMagnet(magnet);
 		let torrent = await RD.getTorrent(magnetInsert.id);
 
-		let selectedTorrent = torrents
-			.find((torrent) => torrent.infoHash === infoHash)
-
-		// let selectedFiles = selectedTorrent.fileSelection;
-
-		torrent = await RD.getTorrent(torrent.id);
-
-		let selectedFiles = torrent.files.filter((file) => file.path.endsWith('.avi') || file.path.endsWith('.mkv') || file.path.endsWith('.mp4') || file.path.endsWith('.wmv')).map((file) => file.id.toString())
+		let selectedFiles = torrent.files.filter((file) => RD.VIDEO_EXTENSIONS.some((ext) => file.path.includes(ext))).map((file) => file.id)
 
 		await RD.selectFiles(torrent.id, selectedFiles);
 
 		torrent = await RD.getTorrent(torrent.id);
 
 		for (let file of files) {
-			let fileId = (file.idx + 1).toString();
-
-			if (!selectedFiles.includes(fileId)) throw new Error('File ID missing from selected files...');
-
+			if (!selectedFiles.includes(file.idx)) throw new Error('File ID missing from selected files...');
 			let fileInfo = torrent.files.find(
-				(f) => f.id.toString() === fileId
+				(f) => f.id === file.idx
 			);
 
 			symlinks[path.join(series.path, `${series.cleanTitle} - S${file.season}E${file.episode} [${infoHash}]${path.extname(fileInfo.path)}`)] = path.join(mount_path, torrent.filename, path.basename(fileInfo.path));

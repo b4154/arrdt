@@ -1,7 +1,6 @@
 import { SeriesMeta } from "../apis/cinemeta/index.ts";
 import { Episodes, Series } from "../apis/sonarr/index.ts";
 import { getTorrent } from "../apis/torrentio/index.ts";
-import * as RD from "../apis/realdebrid/index.ts";
 
 export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta, episodes: Episodes, no_cache: boolean): Promise<Torrent[]> {
 	let torrents: {
@@ -47,7 +46,6 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 				infoHash: hash,
 				bingeGroup: `${stream?.behaviorHints?.bingeGroup}|${hash}`,
 				files: [],
-				fileSelection: []
 			}
 
 			torrents[hash].files.push({
@@ -60,28 +58,6 @@ export async function getSeriesTorrents (series: Series, seriesMeta: SeriesMeta,
 	}
 
 	if (Object.keys(torrents).length <= 0) return [];
-
-	// let availability = await RD.multiInstantAvailability(...Object.keys(torrents))
-
-	// for (let [infoHash, torrent] of Object.entries(torrents)) {
-	// 	//Show fileLists with ONLY video files
-	// 	let fileLists = availability[infoHash]?.rd ? availability[infoHash].rd
-	// 		.filter(
-	// 			(fileList) => Object.values(fileList).every((file) => 
-	// 				file.filename?.endsWith('.avi') || file.filename?.endsWith('.mkv') || file.filename?.endsWith('.mp4') || file.filename?.endsWith('.wmv')
-	// 			) 
-	// 		) 
-	// 	: []
-	// 	//Get all file ids needed for torrent
-	// 	let fileIds = torrent.files.map((file) => (file.idx + 1).toString())
-	// 	//Fetch fileList with every file ID within it.
-	// 	let filesListIndex = fileLists.map((f) => Object.keys(f)).findIndex((fileList) => fileIds.every((id) => fileList.includes(id)))
-	// 	//Delete from torrents object if it doesn't meet this criteria
-	// 	if (filesListIndex == -1) delete torrents[infoHash];
-	// 	else {
-	// 		torrents[infoHash].fileSelection = Object.keys(fileLists[filesListIndex]);
-	// 	}
-	// }
 
 	return Object.values(torrents);
 }

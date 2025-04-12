@@ -1,10 +1,3 @@
-type TorrentFile = {
-	idx: number
-	filename?: string
-	episode: number
-	season: number
-}
-
 type Torrent = {
 	name: string
 	title: string
@@ -12,7 +5,13 @@ type Torrent = {
 	infoHash: string
 	bingeGroup: string
 	files: TorrentFile[],
-	fileSelection?: string[];
+}
+
+type TorrentFile = {
+	idx: number
+	filename?: string
+	episode: number
+	season: number
 }
 
 type Stream = {
