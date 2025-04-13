@@ -50,7 +50,7 @@ export async function getTorrent (id: string): Promise<{
 	}[]
 }> {
 	let torrent = (await client.get(`/torrents/info/${id}`)).data;
-	torrent.files = torrent.files.map((file) => ({...file, id: file.id + 1}))
+	torrent.files = torrent.files.map((file) => ({...file, id: file.id - 1}))
 	return torrent;
 }
 
@@ -97,8 +97,8 @@ export async function deleteTorrent (id: string) {
 }
 
 export async function selectFiles (id: string, files: number[]) {
-	files = files.map(file => file + 1);
+	let selectedFiles = files.map(file => (file + 1).toString());
 	var bodyFormData = new FormData();
-	bodyFormData.append('files', files.join(','))
+	bodyFormData.append('files', selectedFiles.join(','))
 	return (await client.post(`/torrents/selectFiles/${id}`, bodyFormData))
 }

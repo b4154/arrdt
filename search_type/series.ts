@@ -8,7 +8,7 @@ import { validTorrentName } from "../utils/sonarr.ts";
 import { getSeriesTorrents } from "../utils/torrent_search.ts";
 import config from "../utils/config.ts";
 import { waitForFile } from "../utils/fs.ts";
-import { findAsync } from "../utils/generic.ts";
+import { findAsync, resolvePromisesSeq } from "../utils/generic.ts";
 
 const mount_path = config.remote_mount_path;
 
@@ -62,7 +62,7 @@ export default async function series(id, no_cache = false) {
 
 	//Map each episode to a torrent
 	let episodeTorrents = (
-		await Promise.all(
+		await resolvePromisesSeq(
 			episodes.map(async (episode) => {
 				if (episode.title === "TBA") return;
 				let files = torrents

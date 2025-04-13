@@ -15,3 +15,12 @@ export async function findAsync<T>(
 	}
 	return undefined;
 }
+
+export async function resolvePromisesSeq (tasks) {
+	const results = [];
+	for (const task of tasks) {
+	  results.push(await task);
+	}
+  
+	return results;
+};
