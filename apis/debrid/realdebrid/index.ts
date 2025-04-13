@@ -1,13 +1,29 @@
 import axios from "axios";
 import rateLimit from 'axios-rate-limit';
+import axiosRetry from 'axios-retry';
 import _ from 'lodash';
 import config from '../../../utils/config.ts';
 import { toMagnetURI, toTorrentFile } from "parse-torrent";
 
-const client = axios.create({
+const client = rateLimit(axios.create({
 	baseURL: 'https://api.real-debrid.com/rest/1.0/',
 	headers: {
 		Authorization: `Bearer ${config.realdebrid.api_key}`
+	}
+}), { maxRequests: 250, perMilliseconds: 60000 })
+
+axiosRetry(client, {
+	retries: Infinity,
+	// shouldResetTimeout: true,
+	retryDelay: (retryCount) => {
+		console.log('Retry delay 15s')
+		return 15000;
+	},
+	retryCondition: (error) => {
+		console.log(error.response?.data)
+		// Only retry if the API call recieves an error code of 429
+		// this logic can be replaced with whatever approach is necessary for your connector
+		return error.response!.status === 429
 	}
 })
 
@@ -47,7 +63,7 @@ let CACHED_HASHES = [];
 
 export async function instantAvailability (hash: string): Promise<boolean> {
 	hash = hash.toLowerCase();
-	
+
 	if (CACHED_HASHES[hash]) return true;
 
 	let magnet = toMagnetURI({ infoHash: hash });
