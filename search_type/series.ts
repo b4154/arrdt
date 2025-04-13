@@ -61,31 +61,37 @@ export default async function series(id, no_cache = false) {
 
 
 	//Map each episode to a torrent
-	let episodeTorrents = (
-		await resolvePromisesSeq(
-			episodes.map(async (episode) => {
-				if (episode.title === "TBA") return;
-				let files = torrents
-					.flatMap(
-						(torrent) =>
-							torrent.files?.map((file) => ({
-								infoHash: torrent.infoHash,
-								score: torrent.score,
-								...file,
-							})) || []
-					)
-					.sort((a, b) => b.score - a.score)
+	let episodeTorrents: {
+		idx: number;
+		filename?: string;
+		episode: number;
+		season: number;
+		infoHash: string;
+		score: number;
+	}[] = [];
 
+	for (let episode of episodes) {
+		if (episode.title === "TBA") continue;
 
-				let selectedFile = await findAsync(files, async (file) => {
-					return file.episode === episode.episodeNumber && file.season === episode.seasonNumber && await RD.instantAvailability(file.infoHash)
-				});
-				
-				return selectedFile;
-			})
-		)
-	)
-	.filter((file) => file !== undefined);
+		let files = torrents
+			.flatMap(
+				(torrent) =>
+					torrent.files?.map((file) => ({
+						infoHash: torrent.infoHash,
+						score: torrent.score,
+						...file,
+					})) || []
+			)
+			.sort((a, b) => b.score - a.score)
+
+		let selectedFile = await findAsync(files, async (file) => {
+			return file.episode === episode.episodeNumber && file.season === episode.seasonNumber && await RD.instantAvailability(file.infoHash)
+		});
+
+		episodeTorrents.push(selectedFile);
+	}
+
+	episodeTorrents = episodeTorrents.filter((file) => file !== undefined);
 
 	const insertBatches = Object.groupBy(
 		episodeTorrents,
