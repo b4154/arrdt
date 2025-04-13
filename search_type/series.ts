@@ -79,7 +79,7 @@ export default async function series(id, no_cache = false) {
 				(torrent) =>
 					torrent.files?.map((file) => ({
 						infoHash: torrent.infoHash,
-						score: torrent.score + (bingeGroupScore[torrent.bingeGroup] = (bingeGroupScore[torrent.bingeGroup] || 1) + 1),
+						score: torrent.score + torrent.files.length + (bingeGroupScore[torrent.bingeGroup] = (bingeGroupScore[torrent.bingeGroup] || 1) + 1),
 						...file,
 					})) || []
 			)
