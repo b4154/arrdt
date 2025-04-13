@@ -17,7 +17,7 @@ import { chunks } from "./utils/generic.ts";
 let seriesList = await getSeries();
 let seriesFiltered = seriesList.filter((s) => s.statistics && s.statistics.percentOfEpisodes !== 100);
 // seriesFiltered.sort((s1, s2) => (s2.ratings.value * s2.ratings.votes) - (s1.ratings.value * s1.ratings.votes))
-seriesFiltered.sort((s1, s2) => (new Date(s2.added).getTime()) - (new Date(s1.added).getTime()));
+seriesFiltered.sort((s1, s2) => (new Date(s2.firstAired).getTime()) - (new Date(s1.firstAired).getTime()));
 
 //seriesFiltered = seriesFiltered.filter((s) => !seriesFinished[s.id])
 

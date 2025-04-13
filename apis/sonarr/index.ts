@@ -19,6 +19,7 @@ export type Series = {
 	ended: boolean;
 	added: string;
 	year: number;
+	firstAired: string;
 	statistics: {
 		percentOfEpisodes: number;
 		totalEpisodeCount: number;
