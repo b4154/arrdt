@@ -46,6 +46,10 @@ export const VIDEO_EXTENSIONS = [
 let CACHED_HASHES = [];
 
 export async function instantAvailability (hash: string): Promise<boolean> {
+	hash = hash.toLowerCase();
+	
+	if (CACHED_HASHES[hash]) return true;
+
 	let magnet = toMagnetURI({ infoHash: hash });
 
 	let addedTorrent = await addMagnet(magnet);
@@ -59,13 +63,13 @@ export async function instantAvailability (hash: string): Promise<boolean> {
 	torrent = await getTorrent(addedTorrent.id);
 
 	if (torrent.status == 'downloaded') {
-		CACHED_HASHES[torrent.hash] = true;
+		CACHED_HASHES[hash] = true;
 
 		await deleteTorrent(torrent.id);
 		return true;
 	}
 
-	CACHED_HASHES[torrent.hash] = false;
+	CACHED_HASHES[hash] = false;
 
 	await deleteTorrent(torrent.id)
 
