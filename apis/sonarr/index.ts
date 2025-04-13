@@ -17,6 +17,7 @@ export type Series = {
 	tvdbId: string;
 	path: string;
 	ended: boolean;
+	added: string;
 	year: number;
 	statistics: {
 		percentOfEpisodes: number;
