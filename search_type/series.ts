@@ -69,6 +69,8 @@ export default async function series(id, no_cache = false) {
 		score: number;
 	}[] = [];
 
+	let bingeGroupScore = {};
+
 	for (let episode of episodes) {
 		if (episode.title === "TBA") continue;
 
@@ -77,14 +79,15 @@ export default async function series(id, no_cache = false) {
 				(torrent) =>
 					torrent.files?.map((file) => ({
 						infoHash: torrent.infoHash,
-						score: torrent.score,
+						score: torrent.score + (bingeGroupScore[torrent.bingeGroup] = (bingeGroupScore[torrent.bingeGroup] || 1) + 1),
 						...file,
 					})) || []
 			)
+			.filter((file) => file.episode === episode.episodeNumber && file.season === episode.seasonNumber)
 			.sort((a, b) => b.score - a.score)
 
 		let selectedFile = await findAsync(files, async (file) => {
-			return file.episode === episode.episodeNumber && file.season === episode.seasonNumber && await RD.instantAvailability(file.infoHash)
+			return await RD.instantAvailability(file.infoHash);
 		});
 
 		episodeTorrents.push(selectedFile);

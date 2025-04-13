@@ -20,7 +20,7 @@ axiosRetry(client, {
 		return 15000;
 	},
 	retryCondition: (error) => {
-		console.log(error.response?.data)
+		// console.log(error.response?.data)
 		// Only retry if the API call recieves an error code of 429
 		// this logic can be replaced with whatever approach is necessary for your connector
 		return error.response!.status === 429
@@ -66,45 +66,55 @@ export async function instantAvailability (hash: string): Promise<boolean> {
 
 	if (CACHED_HASHES[hash]) return true;
 
+	let magnet = toMagnetURI({ infoHash: hash });
+	let addedTorrent = await addMagnet(magnet);
+
 	try {
-		let magnet = toMagnetURI({ infoHash: hash });
-
-		let addedTorrent = await addMagnet(magnet);
-
 		let torrent = await getTorrent(addedTorrent.id);
 
 		let files = torrent.files.filter((file) => VIDEO_EXTENSIONS.some((ext) => file.path.includes(ext))).map((file) => file.id)
+
+		if (torrent.files.length <= 0) throw new Error('No files found...')
 
 		await selectFiles(addedTorrent.id, files)
 
 		torrent = await getTorrent(addedTorrent.id);
 
 		if (torrent.status == 'downloaded') {
+			console.log(`[RD] Found cached torrent ${torrent.filename} (${torrent.hash})`)
+
 			CACHED_HASHES[hash] = true;
 	
 			await deleteTorrent(torrent.id);
 			return true;
 		}
-	
-		CACHED_HASHES[hash] = false;
-	
-		await deleteTorrent(torrent.id)
-	
-		return false;
-		
-	} catch (e) {
+
+	} catch (e) {}
+
+	try {
+		await deleteTorrent(addedTorrent.id)
+	} catch (e) {} finally {
 		CACHED_HASHES[hash] = false;
 		return false;
 	}
 }
 
 export async function deleteTorrent (id: string) {
-	return (await client.delete(`/torrents/delete/${id}`))
+	try {
+		return (await client.delete(`/torrents/delete/${id}`))
+	} catch (e) {
+		throw new Error(`[RD] Failed to delete torrent ${id}`)
+	}
 }
 
 export async function selectFiles (id: string, files: number[]) {
 	let selectedFiles = files.map(file => (file + 1).toString());
 	var bodyFormData = new FormData();
 	bodyFormData.append('files', selectedFiles.join(','))
-	return (await client.post(`/torrents/selectFiles/${id}`, bodyFormData))
+
+	try {
+		return (await client.post(`/torrents/selectFiles/${id}`, bodyFormData))
+	} catch (e) {
+		throw new Error(`[RD] Select files failed for ${id}... ${selectedFiles.join(',')}`)
+	}
 }
