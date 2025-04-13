@@ -59,7 +59,6 @@ export default async function series(id, no_cache = false) {
 
 	console.log(torrents);
 
-
 	//Map each episode to a torrent
 	let episodeTorrents: {
 		idx: number;

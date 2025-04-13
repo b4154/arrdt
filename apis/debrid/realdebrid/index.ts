@@ -66,30 +66,36 @@ export async function instantAvailability (hash: string): Promise<boolean> {
 
 	if (CACHED_HASHES[hash]) return true;
 
-	let magnet = toMagnetURI({ infoHash: hash });
+	try {
+		let magnet = toMagnetURI({ infoHash: hash });
 
-	let addedTorrent = await addMagnet(magnet);
+		let addedTorrent = await addMagnet(magnet);
 
-	let torrent = await getTorrent(addedTorrent.id);
+		let torrent = await getTorrent(addedTorrent.id);
 
-	let files = torrent.files.filter((file) => VIDEO_EXTENSIONS.some((ext) => file.path.includes(ext))).map((file) => file.id)
+		let files = torrent.files.filter((file) => VIDEO_EXTENSIONS.some((ext) => file.path.includes(ext))).map((file) => file.id)
 
-	await selectFiles(addedTorrent.id, files)
+		await selectFiles(addedTorrent.id, files)
 
-	torrent = await getTorrent(addedTorrent.id);
+		torrent = await getTorrent(addedTorrent.id);
 
-	if (torrent.status == 'downloaded') {
-		CACHED_HASHES[hash] = true;
-
-		await deleteTorrent(torrent.id);
-		return true;
+		if (torrent.status == 'downloaded') {
+			CACHED_HASHES[hash] = true;
+	
+			await deleteTorrent(torrent.id);
+			return true;
+		}
+	
+		CACHED_HASHES[hash] = false;
+	
+		await deleteTorrent(torrent.id)
+	
+		return false;
+		
+	} catch (e) {
+		CACHED_HASHES[hash] = false;
+		return false;
 	}
-
-	CACHED_HASHES[hash] = false;
-
-	await deleteTorrent(torrent.id)
-
-	return false;
 }
 
 export async function deleteTorrent (id: string) {
