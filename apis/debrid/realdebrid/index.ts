@@ -66,32 +66,39 @@ export async function instantAvailability (hash: string): Promise<boolean> {
 
 	if (CACHED_HASHES[hash]) return true;
 
+	let torrent;
+
 	try {
 
 		let magnet = toMagnetURI({ infoHash: hash });
-		let addedTorrent = await addMagnet(magnet);
-		let torrent = await getTorrent(addedTorrent.id);
+		torrent = await addMagnet(magnet);
+		torrent = await getTorrent(torrent.id);
 
 		let files = torrent.files.filter((file) => VIDEO_EXTENSIONS.some((ext) => file.path.includes(ext))).map((file) => file.id)
 
 		if (torrent.files.length <= 0) throw new Error('No files found...')
 
-		await selectFiles(addedTorrent.id, files)
+		await selectFiles(torrent.id, files)
 
-		torrent = await getTorrent(addedTorrent.id);
+		torrent = await getTorrent(torrent.id);
 
 		if (torrent.status == 'downloaded') {
 			console.log(`[RD] Found cached torrent ${torrent.filename} (${torrent.hash})`)
-
-			CACHED_HASHES[hash] = true;
 	
 			await deleteTorrent(torrent.id);
+			
+			CACHED_HASHES[hash] = true;
 			return true;
 		}
 
-		await deleteTorrent(torrent.id)
-
-	} catch (e) {}
+	} catch (e) {} finally {
+		try {
+			if (torrent && torrent.id) await deleteTorrent(torrent.id)
+		} catch (e) {
+			CACHED_HASHES[hash] = false;
+			return false;
+		}
+	}
 
 	CACHED_HASHES[hash] = false;
 	return false;
